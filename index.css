@@ -1,0 +1,326 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 2vh;
+  box-sizing: border-box;
+}
+
+/* 标题样式 */
+h1 {
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  margin-bottom: 20px;
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 头部区域 */
+header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/*** 按钮 ***/
+.btn {
+  display: inline-block;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  border: none;
+  border-radius: 25px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+  background: linear-gradient(45deg, #ee5a24, #ff6b6b);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+.btn+.btn {
+  margin-left: 15px;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.wrap {
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/*** 卡片容器 ***/
+.container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/*** 卡片 ***/
+.card-wrap {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  width: 40px;
+  font-size: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.card-wrap:hover {
+  transform: scale(1.05);
+}
+
+.card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f0f0f0, #cacaca);
+  box-shadow: 
+    0 2px 5px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.card span {
+  opacity: 0.5;
+  font-size: 24px;
+  transition: all 0.3s ease;
+}
+
+.is-allow {
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  border-color: #4ecdc4;
+  box-shadow: 
+    0 6px 12px rgba(78, 205, 196, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.is-allow span {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.is-allow:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 8px 16px rgba(78, 205, 196, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/*** 卡片动画 ***/
+@keyframes scaleDraw {
+  0% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/*** 卡槽 ***/
+.card-slot {
+  margin-top: 20px;
+  padding: 10px 25px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  height: 60px;
+  width: 320px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.card-slot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  border-radius: 15px;
+  pointer-events: none;
+}
+
+/* Custom Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: rgba(44, 44, 84, 0.85);
+  padding: 30px 40px;
+  border-radius: 20px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 90%;
+  max-width: 400px;
+  transform: scale(0.9) translateY(-20px);
+  opacity: 0;
+  animation: modal-pop 0.3s ease-out forwards;
+}
+
+@keyframes modal-pop {
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-content h2 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.modal-content p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.modal-content .btn {
+  background: linear-gradient(45deg, #4ecdc4, #3498db);
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+  font-size: 16px;
+  padding: 12px 30px;
+}
+
+.modal-content .btn:hover {
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  transform: translateY(-1px);
+}
+
+/* Wallet Bar */
+.wallet-bar {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  z-index: 20;
+}
+
+.player-status {
+  position: absolute;
+  top: 35px;
+  left: 25px;
+  z-index: 20;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: white;
+  font-weight: 600;
+}
+
+.badge {
+  background: linear-gradient(45deg, #f1c40f, #f39c12);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-left: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.btn-logout {
+  background: linear-gradient(45deg, #e74c3c, #c0392b);
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+  padding: 8px 15px;
+  font-size: 12px;
+}
+
+.btn-logout:hover {
+  background: linear-gradient(45deg, #c0392b, #e74c3c);
+}
+
+.game-container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 5vh;
+  box-sizing: border-box;
+}

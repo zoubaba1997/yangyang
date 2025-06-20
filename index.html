@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <link rel="stylesheet" href="index.css">
+  <script src="https://unpkg.com/vue@3.2.12/dist/vue.global.js"></script>
+  <script src="./utils/audio.js"></script>
+  <title>羊了个羊</title>
+</head>
+<body>
+  <div id="app">
+    <h1>第 {{ level }} 关</h1>
+    <header>
+      <span class="btn" @click="handleStart">开始游戏</span>
+      <span class="btn" @click="handleReset">重置</span>
+    </header>
+    <div class="card-slot"></div>
+    <div class="wrap">
+      <div class="container" :style="setContainerStyle()">
+        <div class="card-wrap"
+          v-for="(item, index) in cards" 
+          :key="index"
+          :style="setCardStyle(item)">
+          <div class="card" 
+            :class="[item.not && 'is-allow']"
+            :style="setAnimation(item)"
+            @click="clickCard(item, index)">
+            <span>{{ item.icon }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" v-if="modal.visible" @click.self="hideModal">
+      <div class="modal-content">
+        <h2>{{ modal.title }}</h2>
+        <p>{{ modal.message }}</p>
+        <button class="btn" @click="hideModal">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive, toRefs, computed, onMounted, watch, defineComponent } = Vue;
+
+    const App = {
+      setup() {
+        const audio = new CustomAudio({ template: '#app', bgmSrc: './static/bgm.mp3', clickBgm: './static/clickBgm.mp3' });
+        
+        const config = reactive({ base: 40, selectMaxLength: 7, maxCount: 3, animationTime: 400, maxLevel: 10, row: 8, col: 8 });
+        
+        const data = reactive({
+          level: 1,
+          cards: [],
+          select: new Map(),
+          containerInfo: null,
+          cardSlotInfo: null,
+          modal: { visible: false, title: '', message: '' }
+        });
+        
+        const clearingIcons = new Set();
+        let onModalClose = null;
+
+        const setContainerStyle = () => `height: ${config.base * config.row}px; width: ${config.base * config.col}px`;
+        const setCardStyle = ({ x, y }) => `transform: translateX(${x}px) translateY(${y}px);`;
+        const setAnimation = ({ clear, display }) => (clear ? `animation: scaleDraw ${config.animationTime}ms;` : '') + (display ? 'display: none;' : '');
+        const randomCreateId = (length) => (Math.random() + new Date().getTime()).toString(32).slice(0, length);
+        
+        const showModal = (title, message, callback) => {
+          data.modal.title = title;
+          data.modal.message = message;
+          data.modal.visible = true;
+          onModalClose = callback;
+        };
+        const hideModal = () => {
+          data.modal.visible = false;
+          if (onModalClose) {
+            setTimeout(() => { onModalClose(); onModalClose = null; }, 300);
+          }
+        };
+        
+        const getDoMInfo = () => {
+          data.containerInfo = document.querySelector('.container').getBoundingClientRect();
+          data.cardSlotInfo = document.querySelector('.card-slot').getBoundingClientRect();
+        };
+        
+        onMounted(getDoMInfo);
+        
+        const checkShading = () => {
+            data.cards.forEach((cur, i) => {
+                cur.not = true;
+                if (cur.status !== 0 || cur.display) return;
+                const { x: x1, y: y1 } = cur;
+                const x2 = x1 + config.base;
+                const y2 = y1 + config.base;
+                for (let j = i + 1; j < data.cards.length; j++) {
+                    const compare = data.cards[j];
+                    if (compare.status !== 0 || compare.display) continue;
+                    const { x, y } = compare;
+                    if (!(y + config.base <= y1 || y >= y2 || x + config.base <= x1 || x >= x2)) {
+                        cur.not = false;
+                        break;
+                    }
+                }
+            });
+        };
+
+        const createCardInfo = (icon, r, c, l) => {
+          const { base } = config;
+          const layerOffset = 5 * l;
+          data.cards.push({
+            id: randomCreateId(6),
+            icon,
+            x: c * base + layerOffset,
+            y: r * base + layerOffset,
+            not: true, status: 0, clear: false, display: false
+          });
+        };
+        
+        const icons = computed(() => ['🐑', '🌹', '🐖', '🍚', '👓', '🐭', '😘', '🍑', '⭐', '💩', '💊', '🎈'].slice(0, 2 * data.level));
+
+        const init = () => {
+            data.select.clear();
+            data.cards = [];
+            let cardPool = [];
+            const perIconCount = 6;
+            for (const icon of icons.value) {
+                for (let k = 0; k < perIconCount; k++) cardPool.push(icon);
+            }
+            cardPool.sort(() => Math.random() - 0.5);
+            const grid = Array(config.row).fill(null).map(() => Array(config.col).fill(null).map(() => []));
+            const maxLayer = 3;
+            cardPool.forEach(icon => {
+                let placed = false, retries = 0;
+                while (!placed && retries < 1000) {
+                    const r = Math.floor(Math.random() * config.row);
+                    const c = Math.floor(Math.random() * config.col);
+                    if (grid[r][c].length < maxLayer) {
+                        grid[r][c].push(icon);
+                        placed = true;
+                    }
+                    retries++;
+                }
+            });
+            for (let l = 0; l < maxLayer; l++) {
+                for (let r = 0; r < config.row; r++) {
+                    for (let c = 0; c < config.col; c++) {
+                        if (grid[r][c][l]) createCardInfo(grid[r][c][l], r, c, l);
+                    }
+                }
+            }
+            checkShading();
+        };
+
+        const refreshCardPosition = () => {
+            let index = 0;
+            const { x, y, height } = data.cardSlotInfo;
+            const { top, left } = data.containerInfo;
+            const yOffset = (height - config.base) / 2;
+            const poor = (x < left) ? -(left - x) : (x - left);
+            data.select.forEach(item => {
+                item.forEach(card => {
+                    card.x = index * config.base + poor + config.base / 2;
+                    card.y = y - top + yOffset;
+                    index++;
+                });
+            });
+        };
+
+        const checkSelectQueue = (cards) => {
+            if (cards.length === config.maxCount) {
+                const iconToClear = cards[0].icon;
+                clearingIcons.add(iconToClear);
+                cards.forEach(item => item.clear = true);
+                setTimeout(() => {
+                    data.select.delete(iconToClear);
+                    cards.forEach(item => item.display = true);
+                }, config.animationTime - 100);
+                setTimeout(() => {
+                    refreshCardPosition();
+                    clearingIcons.delete(iconToClear);
+                    const hasCards = data.cards.filter(item => !item.display);
+                    if (!hasCards.length) {
+                        const level = data.level + 1;
+                        if (level > config.maxLevel) {
+                            showModal('🎉 游戏通关 🎉', '所有关卡已完成！', () => { data.level = 1; });
+                        } else {
+                            showModal('恭喜通关！', `即将开始第${level}关`, () => data.level++);
+                        }
+                    }
+                }, config.animationTime + 100);
+            }
+        };
+
+        const selectLength = computed(() => Array.from(data.select.values()).reduce((sum, cards) => sum + cards.length, 0));
+        
+        const handleFailure = () => { data.level = 1; };
+        
+        const clickCard = (item) => {
+            if (item.status === 1 || clearingIcons.has(item.icon)) return;
+            audio.rePlayClickBgm();
+            if (item.not && selectLength.value < config.selectMaxLength) {
+                item.status = 1;
+                const cards = data.select.get(item.icon) || [];
+                data.select.set(item.icon, [...cards, item]);
+                refreshCardPosition();
+                checkShading();
+                checkSelectQueue(data.select.get(item.icon));
+            }
+            setTimeout(() => {
+                if (selectLength.value >= config.selectMaxLength) {
+                    showModal('游戏失败', '即将返回第一关！', handleFailure);
+                }
+            }, config.animationTime);
+        };
+        
+        const handleStart = () => {
+            if(data.cards.length > 0) return showModal('提示', '游戏已开始');
+            init();
+            audio.play();
+        };
+        
+        const handleReset = () => {
+            data.cards = [];
+            data.select.clear();
+            init();
+            audio.replay();
+        };
+
+        watch(() => data.level, handleReset, { immediate: true });
+        
+        return { ...toRefs(data), config, handleStart, handleReset, setContainerStyle, setCardStyle, setAnimation, clickCard, hideModal };
+      }
+    };
+
+    createApp(App).mount('#app');
+  </script>
+</body>
+</html> 
